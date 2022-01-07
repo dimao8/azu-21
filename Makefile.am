@@ -7,6 +7,8 @@ azu21_SOURCES = src/azu21.c \
   src/charger.h \
   src/display.c \
   src/display.h \
+  src/keyboard.c \
+  src/keyboard.h \
   src/utils.c \
   src/utils.h \
   src/hal/startup_stm32f0xx.c \

@@ -1,19 +1,21 @@
 #include "charger.h"
 #include "display.h"
+#include "keyboard.h"
 
 #include "hal/systick.h"
 
-#define CURRENT_LIMIT             0.5f
-#define VOLTAGE_LIMIT             21.0f
-#define CURRENT_TRESHOLD_LIMIT    0.1f
+#define CURRENT_LIMIT             500
+#define VOLTAGE_LIMIT             21000
+#define CURRENT_TRESHOLD_LIMIT    100
 
-#define DEFAULT_CHARGER_VOLTAGE   21.0f
-#define DEFAULT_CHARGER_CURRENT   0.5f
+#define DEFAULT_CHARGER_VOLTAGE   21000
+#define DEFAULT_CHARGER_CURRENT   500
 
 #define DEFAULT_CHARGER_CYCLE_MS  2
 
 #define TEST_TIMEOUT_MS           2000
 #define VALUES_UPDATE_TIMEOUT_MS  500
+#define VALUES_BLINK_TIMEOUT_MS   1000
 
 /**
  * State machine enumerator for charger states.
@@ -29,12 +31,12 @@ typedef enum charger_state_tag
 
 charger_state_t charger_state;                    //!< State of the charger
 
-float charger_current;                            //!< The maximum current on second stage
-float charger_voltage;                            //!< The maximum voltage at the end of charging
+uint32_t charger_current;                         //!< The maximum current on second stage (mA)
+uint32_t charger_voltage;                         //!< The maximum voltage at the end of charging (mV)
 
 uint32_t charger_timer;                           //!< Global timer for charger
 
-//*************************  InitCharger  *************************
+/**************************  InitCharger  **************************/
 
 void InitCharger()
 {
@@ -47,15 +49,17 @@ void InitCharger()
 
   InitSysTick();
   InitDisplay();
+  InitKeyboard(OnKeyPress);
 }
 
-//****************************  OnIdle  ***************************
+/*****************************  OnIdle  ****************************/
 
 void OnIdle()
 {
   DisplayIterate();
   msleep(DEFAULT_CHARGER_CYCLE_MS);
   charger_timer += DEFAULT_CHARGER_CYCLE_MS;
+  ProcessKeyboard();
 
   switch (charger_state)
     {
@@ -77,6 +81,111 @@ void OnIdle()
           SetGreenValue(charger_voltage);
           SetRedValue(charger_current);
           charger_timer = 0;
+        }
+      break;
+
+    case stVoltage:
+      if (charger_timer > VALUES_BLINK_TIMEOUT_MS)
+        {
+          charger_timer = 0;
+        }
+      if (charger_timer > VALUES_BLINK_TIMEOUT_MS/2)
+        ClearGreenValue();
+      else
+        SetGreenValue(charger_voltage);
+      break;
+
+    case stCurrent:
+      if (charger_timer > VALUES_BLINK_TIMEOUT_MS)
+        {
+          charger_timer = 0;
+        }
+      if (charger_timer > VALUES_BLINK_TIMEOUT_MS/2)
+        ClearRedValue();
+      else
+        SetRedValue(charger_current);
+      break;
+
+    default:
+      break;
+
+    }
+}
+
+/***************************  OnKeyPress  **************************/
+
+void OnKeyPress(key_t key)
+{
+  switch (charger_state)
+    {
+
+    case stIdle:
+      switch (key)
+        {
+
+        case kMode:
+          charger_state = stVoltage;
+          break;
+
+        case kStart:
+          // TODO : StartCharge();
+          break;
+
+        default:
+          break;
+
+        }
+      break;
+
+    case stVoltage:
+      switch (key)
+        {
+
+        case kMode:
+          charger_state = stCurrent;
+          break;
+
+        case kUp:
+          charger_voltage += 100;
+          if (charger_voltage > VOLTAGE_LIMIT)
+            charger_voltage = VOLTAGE_LIMIT;
+          break;
+
+        case kDown:
+          charger_voltage -= 100;
+          if (charger_voltage > VOLTAGE_LIMIT)
+            charger_voltage = 0;
+          break;
+
+        default:
+          break;
+
+        }
+      break;
+
+    case stCurrent:
+      switch (key)
+        {
+
+        case kMode:
+          charger_state = stIdle;
+          break;
+
+        case kUp:
+          charger_current += 10;
+          if (charger_current > CURRENT_LIMIT)
+            charger_current = CURRENT_LIMIT;
+          break;
+
+        case kDown:
+          charger_current -= 10;
+          if (charger_current > CURRENT_LIMIT)
+            charger_current = 0;
+          break;
+
+        default:
+          break;
+
         }
       break;
 

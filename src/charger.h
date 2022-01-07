@@ -12,6 +12,8 @@
 #ifndef CHARGER_H
 #define CHARGER_H
 
+#include "keyboard.h"
+
 ///
 /// \brief InitCharger
 ///
@@ -21,5 +23,12 @@ void InitCharger();
 /// \brief OnIdle
 ///
 void OnIdle();
+
+/**
+ * \param [in] key -- Pressed key
+ *
+ * Keyboard callback
+ */
+void OnKeyPress(key_t key);
 
 #endif // CHARGER_H

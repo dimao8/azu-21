@@ -91,7 +91,7 @@ const unsigned char symbol_table[10] =
   0x06,                                                     // 1
   0x5B,                                                     // 2
   0x4F,                                                     // 3
-  0x46,                                                     // 4
+  0x66,                                                     // 4
   0x6D,                                                     // 5
   0x7D,                                                     // 6
   0x07,                                                     // 7
@@ -129,36 +129,28 @@ void SetDigit(unsigned char n)
 
 //********************  PrintFloat  *******************
 
-void PrintFloat(unsigned char * buffer, float value)
+void PrintFloat(unsigned char * buffer, uint32_t value)
 {
-  uint32_t int_val;
   uint32_t num;
 
   buffer[0] = 0;
   buffer[1] = 0;
   buffer[2] = 0;
 
-  if (value < 0)
-    {
-      buffer[0] = symbol_table[0];
-      buffer[1] = symbol_table[0];
-      buffer[2] = symbol_table[0] | DISPLAY_DECIMAL_POINT;
-      return;
-    }
-  else if (value < 9.999f)
+  if (value < 10000)
     {
       buffer[0] = DISPLAY_DECIMAL_POINT;
-      int_val = value*100.0f;
+      value = value/10;
     }
-  else if (value < 99.99f)
+  else if (value < 100000)
     {
       buffer[1] = DISPLAY_DECIMAL_POINT;
-      int_val = value*10.0f;
+      value = value/100;
     }
-  else if (value < 999.9f)
+  else if (value < 1000000)
     {
       buffer[2] = DISPLAY_DECIMAL_POINT;
-      int_val = value;
+      value = value/1000;
     }
   else
     {
@@ -168,14 +160,14 @@ void PrintFloat(unsigned char * buffer, float value)
       return;
     }
 
-  num = int_val/100;
+  num = value/100;
   buffer[0] |= symbol_table[num];
-  int_val %= 100;
+  value %= 100;
 
-  num = int_val/10;
+  num = value/10;
   buffer[1] |= symbol_table[num];
 
-  buffer[2] |= symbol_table[int_val%10];
+  buffer[2] |= symbol_table[value%10];
 }
 
 //*******************  InitDisplay  *******************
@@ -201,7 +193,7 @@ void InitDisplay()
     | (GPIO_MODE_OUTPUT << LED_CHARGE_Pos*2)
     | (GPIO_MODE_OUTPUT << LED_OVERCURRENT_Pos*2);
 
-  GPIOB->OSPEEDR |= (GPIO_SPEED_HIGH << DISPLAY_SEGA_Pos*2) // Set display pins as outputs
+  GPIOB->OSPEEDR |= (GPIO_SPEED_HIGH << DISPLAY_SEGA_Pos*2) // Set display pins as maxfast
     | (GPIO_SPEED_HIGH << DISPLAY_SEGB_Pos*2)
     | (GPIO_SPEED_HIGH << DISPLAY_SEGC_Pos*2)
     | (GPIO_SPEED_HIGH << DISPLAY_SEGD_Pos*2)
@@ -276,16 +268,30 @@ void SetTestState(bool state)
 
 //******************  SetGreenValue  ******************
 
-void SetGreenValue(float value)
+void SetGreenValue(uint32_t value)
 {
   PrintFloat(green_buffer, value);
 }
 
+void ClearGreenValue()
+{
+  green_buffer[0] = 0;
+  green_buffer[1] = 0;
+  green_buffer[2] = 0;
+}
+
 //*******************  SetRedValue  *******************
 
-void SetRedValue(float value)
+void SetRedValue(uint32_t value)
 {
   PrintFloat(red_buffer, value);
+}
+
+void ClearRedValue()
+{
+  red_buffer[0] = 0;
+  red_buffer[1] = 0;
+  red_buffer[2] = 0;
 }
 
 //******************  DisplayIterate  *****************

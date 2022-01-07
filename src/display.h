@@ -2,6 +2,7 @@
 #define DISPLAY_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 /**
  * Init display module.
@@ -21,7 +22,9 @@ void SetTestState(bool state);
  * Set value to display on green display. \b value can not be greater
  * than 999.0 and lesser than 0.01
  */
-void SetGreenValue(float value);
+void SetGreenValue(uint32_t value);
+
+void ClearGreenValue();
 
 /**
  * \param [in] value -- Value to show on red display
@@ -29,7 +32,9 @@ void SetGreenValue(float value);
  * Set value to display on red display. \b value can not be greater
  * than 999.0 and lesser than 0.01
  */
-void SetRedValue(float value);
+void SetRedValue(uint32_t value);
+
+void ClearRedValue();
 
 /**
  * One pass for display. Call it repeatedly for dynamic display to work.
