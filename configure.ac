@@ -11,8 +11,8 @@ AM_INIT_AUTOMAKE([1.10 foreign subdir-objects silent-rules])
 # Check for GCC
 
 ac_ldflags_save="${LDFLAGS}"
-LDFLAGS="${LDFLAGS} -specs=nosys.specs -nostartfiles"
-AC_PROG_CC
+LDFLAGS="${LDFLAGS} -specs=nosys.specs -nostartfiles -std=gnu11"
+AC_PROG_CC([gcc])
 LDFLAGS="${ac_ldflags_save}"
 
 # Debug

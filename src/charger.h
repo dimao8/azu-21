@@ -25,10 +25,24 @@ void InitCharger();
 void OnIdle();
 
 /**
- * \param [in] key -- Pressed key
- *
  * Keyboard callback
+ *
+ * \param [in] key -- Pressed key
  */
 void OnKeyPress(key_t key);
+
+/**
+ * Get current when charging.
+ *
+ * \return Returns charging current.
+ */
+int GetChargingCurrent();
+
+/**
+ * Get voltage when charging.
+ *
+ * \return Returns charging current.
+ */
+int GetChargingVoltage();
 
 #endif // CHARGER_H

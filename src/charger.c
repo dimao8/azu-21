@@ -3,6 +3,10 @@
 #include "keyboard.h"
 
 #include "hal/systick.h"
+#include "hal/adc.h"
+#include "hal/pwm.h"
+
+#include <stdint.h>
 
 #define CURRENT_LIMIT             500
 #define VOLTAGE_LIMIT             21000
@@ -34,6 +38,9 @@ charger_state_t charger_state;                    //!< State of the charger
 uint32_t charger_current;                         //!< The maximum current on second stage (mA)
 uint32_t charger_voltage;                         //!< The maximum voltage at the end of charging (mV)
 
+uint32_t measured_current;                        //!< Current in charge process
+uint32_t measured_voltage;                        //!< Voltage in charge process
+
 uint32_t charger_timer;                           //!< Global timer for charger
 
 /**************************  InitCharger  **************************/
@@ -43,6 +50,9 @@ void InitCharger()
   charger_current = DEFAULT_CHARGER_CURRENT;
   charger_voltage = DEFAULT_CHARGER_VOLTAGE;
 
+  measured_current = 0;
+  measured_voltage = 0;
+
   charger_state = stTest;
 
   charger_timer = 0;
@@ -50,12 +60,16 @@ void InitCharger()
   InitSysTick();
   InitDisplay();
   InitKeyboard(OnKeyPress);
+  InitADC();
+  InitPWM();
 }
 
 /*****************************  OnIdle  ****************************/
 
 void OnIdle()
 {
+  int adc_reference;
+
   DisplayIterate();
   msleep(DEFAULT_CHARGER_CYCLE_MS);
   charger_timer += DEFAULT_CHARGER_CYCLE_MS;
@@ -82,6 +96,21 @@ void OnIdle()
           SetRedValue(charger_current);
           charger_timer = 0;
         }
+      break;
+
+    case stCharge:
+      // UpdateCharge();
+      adc_reference = ConvertReference();
+
+      measured_current = ConvertChannel(ADC_CHANNEL_ISEN);
+      measured_current = measured_current*adc_reference/4096;
+
+      measured_voltage = ConvertChannel(ADC_CHANNEL_VSENP);
+      measured_voltage -= ConvertChannel(ADC_CHANNEL_VSENN);
+      measured_voltage = measured_voltage*adc_reference/4096;
+
+      SetGreenValue(measured_voltage);
+      SetRedValue(measured_current);
       break;
 
     case stVoltage:
@@ -129,6 +158,9 @@ void OnKeyPress(key_t key)
 
         case kStart:
           // TODO : StartCharge();
+          charger_state = stCharge;
+          EnablePWM(true);
+          SetPWMValue(128);
           break;
 
         default:

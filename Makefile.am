@@ -15,9 +15,13 @@ azu21_SOURCES = src/azu21.c \
   src/hal/system_stm32f0xx.c \
   src/hal/system_stm32f0xx.h \
   src/hal/systick.h \
-  src/hal/systick.c
+  src/hal/systick.c \
+  src/hal/adc.h \
+  src/hal/adc.c \
+  src/hal/pwm.c \
+  src/hal/pwm.h
 
-azu21_CFLAGS = -mcpu=cortex-m0 -mthumb -I$(srcdir)/include -I$(srcdir)/src -I$(srcdir)/src/hal --specs=nosys.specs -DSTM32F030x8 -DFREQUENCY=8000000
+azu21_CFLAGS = -mcpu=cortex-m0 -mthumb -I$(srcdir)/include -I$(srcdir)/src/hal -std=gnu11 --specs=nosys.specs -DSTM32F030x8 -DFREQUENCY=8000000
 azu21_LDFLAGS = -L$(srcdir)/ld -Tstm32f030x.ld -nostartfiles -lnosys
 
 chmod-bin :
