@@ -159,8 +159,10 @@ void OnKeyPress(key_t key)
         case kStart:
           // TODO : StartCharge();
           charger_state = stCharge;
-          EnablePWM(true);
-          SetPWMValue(128);
+          // Delete this -->
+          // SetPWMValue(4);
+          SetPWMValue(2);
+          // <--
           break;
 
         default:

@@ -18,8 +18,10 @@
 #define PWM_PIN_Pos             5
 #define PWM_PIN_Msk             (1 << PWM_PIN_Pos)
 
-#define DEFAULT_PWM_RESOLUTION  256
-#define DEFAULT_PWM_FREQUENCY   10000
+#define DEFAULT_PWM_RESOLUTION  600
+#define DEFAULT_PWM_FREQUENCY   6666
+
+#define MAX_PWM_VALUE           100
 
 /*****************  InitPWM  *****************/
 
@@ -41,10 +43,15 @@ void InitPWM()
 
 void SetPWMValue(unsigned short value)
 {
-  if (value > DEFAULT_PWM_RESOLUTION)
-    TIM3->CCR1 = DEFAULT_PWM_RESOLUTION;
+  if (value > MAX_PWM_VALUE)
+    TIM3->CCR1 = MAX_PWM_VALUE;
   else
     TIM3->CCR1 = value;
+
+  if (value == 0)
+    EnablePWM(false);
+  else
+    EnablePWM(true);
 }
 
 /****************  EnablePWM  ****************/
