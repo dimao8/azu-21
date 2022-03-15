@@ -43,6 +43,10 @@ uint32_t measured_voltage;                        //!< Voltage in charge process
 
 uint32_t charger_timer;                           //!< Global timer for charger
 
+// TODO : Delete this -->
+int n;
+// <--
+
 /**************************  InitCharger  **************************/
 
 void InitCharger()
@@ -62,6 +66,8 @@ void InitCharger()
   InitKeyboard(OnKeyPress);
   InitADC();
   InitPWM();
+
+  n = 1;
 }
 
 /*****************************  OnIdle  ****************************/
@@ -79,6 +85,7 @@ void OnIdle()
     {
 
     case stTest:
+      SetPWMValue(0);
       if (charger_timer > TEST_TIMEOUT_MS)
         {
           charger_state = stIdle;
@@ -90,6 +97,7 @@ void OnIdle()
       break;
 
     case stIdle:
+      SetPWMValue(0);
       if (charger_timer > VALUES_UPDATE_TIMEOUT_MS)
         {
           SetGreenValue(charger_voltage);
@@ -109,11 +117,15 @@ void OnIdle()
       measured_voltage -= ConvertChannel(ADC_CHANNEL_VSENN);
       measured_voltage = measured_voltage*adc_reference/4096;
 
-      SetGreenValue(measured_voltage);
+      // TODO : Delete this -->
+      SetPWMValue(n*10);
+      // <--
+      // SetGreenValue(measured_voltage);
       SetRedValue(measured_current);
       break;
 
     case stVoltage:
+      SetPWMValue(0);
       if (charger_timer > VALUES_BLINK_TIMEOUT_MS)
         {
           charger_timer = 0;
@@ -125,6 +137,7 @@ void OnIdle()
       break;
 
     case stCurrent:
+      SetPWMValue(0);
       if (charger_timer > VALUES_BLINK_TIMEOUT_MS)
         {
           charger_timer = 0;
@@ -159,10 +172,7 @@ void OnKeyPress(key_t key)
         case kStart:
           // TODO : StartCharge();
           charger_state = stCharge;
-          // Delete this -->
-          // SetPWMValue(4);
-          SetPWMValue(2);
-          // <--
+          SetPWMValue(0);
           break;
 
         default:
@@ -219,6 +229,27 @@ void OnKeyPress(key_t key)
 
         default:
           break;
+
+        }
+      break;
+
+    case stCharge:
+      switch (key)
+        {
+
+          case kUp:
+            n++;
+            if (n > 100)
+              n = 100;
+            SetGreenValue(n*10);
+            break;
+
+          case kDown:
+            n--;
+            if (n < 0)
+              n = 0;
+            SetGreenValue(n*10);
+            break;
 
         }
       break;
