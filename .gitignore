@@ -1,6 +1,7 @@
 autom4te.cache/
 build/
 cb/
+.vscode/
 aclocal.m4
 configure
 compile

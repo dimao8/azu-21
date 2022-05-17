@@ -1,8 +1,8 @@
 #include "utils.h"
 
-//************************  Wait  ************************
+//************************  wait  ************************
 
-void Wait(unsigned int n)
+void wait(unsigned int n)
 {
   while (n--) asm("nop");
 }

@@ -32,7 +32,7 @@
 /**
  * Init ADC module.
  */
-void InitADC();
+void init_adc();
 
 /**
  * Convert single channel.
@@ -40,14 +40,14 @@ void InitADC();
  * \param [in] channel -- Channel to convert. It must be lesser than ADC_MAX_CHANNEL
  * \return Return result of ADC conversion. Negative value means error.
  */
-int ConvertChannel(unsigned char channel);
+int convert_channel(unsigned char channel);
 
 /**
  * Convert reference voltage source.
  *
  * \return Return result of ADC conversion in millivolts. Negative value means error.
  */
-int ConvertReference();
+int convet_reference();
 
 #endif // ADC_H
 

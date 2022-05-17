@@ -17,32 +17,32 @@
 ///
 /// \brief InitCharger
 ///
-void InitCharger();
+void init_charger();
 
 ///
 /// \brief OnIdle
 ///
-void OnIdle();
+void on_idle();
 
 /**
  * Keyboard callback
  *
  * \param [in] key -- Pressed key
  */
-void OnKeyPress(key_t key);
+void on_key_press(key_t key);
 
 /**
  * Get current when charging.
  *
  * \return Returns charging current.
  */
-int GetChargingCurrent();
+int get_charging_current();
 
 /**
  * Get voltage when charging.
  *
  * \return Returns charging current.
  */
-int GetChargingVoltage();
+int get_charging_voltage();
 
 #endif // CHARGER_H

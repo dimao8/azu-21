@@ -23,9 +23,9 @@
 
 #define MAX_PWM_VALUE           100
 
-/*****************  InitPWM  *****************/
+/*****************  init_pwm  *****************/
 
-void InitPWM()
+void init_pwm()
 {
   RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
   RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
@@ -40,9 +40,9 @@ void InitPWM()
   TIM3->DIER = TIM_DIER_CC1IE | TIM_DIER_UIE;
 }
 
-/***************  SetPWMValue  ***************/
+/***************  set_pwm_value  ***************/
 
-void SetPWMValue(unsigned short value)
+void set_pwm_value(unsigned short value)
 {
   if (value > MAX_PWM_VALUE)
     TIM3->CCR1 = MAX_PWM_VALUE;
@@ -50,14 +50,14 @@ void SetPWMValue(unsigned short value)
     TIM3->CCR1 = value;
 
   if (value == 0)
-    EnablePWM(false);
+    enable_pwm(false);
   else
-    EnablePWM(true);
+    enable_pwm(true);
 }
 
-/****************  EnablePWM  ****************/
+/****************  enable_pwm  ****************/
 
-void EnablePWM(bool ena)
+void enable_pwm(bool ena)
 {
   if (ena)
     {

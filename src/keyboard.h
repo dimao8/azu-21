@@ -3,17 +3,17 @@
 
 typedef enum key_tag
 {
-  kNone,
-  kStart,
-  kUp,
-  kDown,
-  kMode
+  k_none,
+  k_start,
+  k_up,
+  k_down,
+  k_mode
 } key_t;
 
 typedef void (*key_callback_proc_t)(key_t);
 
-void InitKeyboard(key_callback_proc_t callback);
+void init_keyboard(key_callback_proc_t callback);
 
-void ProcessKeyboard();
+void process_keyboard();
 
 #endif // KEYBOARD_H

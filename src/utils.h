@@ -2,8 +2,8 @@
 #define UTILS_H
 
 ///
-/// \brief Wait for n ticks
+/// \brief wait for n ticks
 ///
-void Wait(unsigned int n);
+void wait(unsigned int n);
 
 #endif // UTILS_H

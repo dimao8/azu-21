@@ -24,9 +24,5 @@ AS_IF([test "x$enable_debug" = "xyes"],
       [CFLAGS="$CFLAGS -O0 -gdwarf-2 -DDEBUG"],
       [CFLAGS="$CFLAGS -O2 -DNDEBUG"])
 
-AC_CONFIG_FILES([Makefile
-                 program.sh
-                 connect.sh],
-                 [chmod +x program.sh
-                  chmod +x connect.sh])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

@@ -7,14 +7,14 @@
 /**
  * Init display module.
  */
-void InitDisplay();
+void init_display();
 
 /**
  * Set display state into test. All segments will be lighted.
  *
  * \param [in] state -- Set to \c true to turn on test state
  */
-void SetTestState(bool state);
+void set_test_state(bool state);
 
 /**
  * \param [in] value -- Value to show on green display
@@ -22,9 +22,9 @@ void SetTestState(bool state);
  * Set value to display on green display. \b value can not be greater
  * than 999.0 and lesser than 0.01
  */
-void SetGreenValue(uint32_t value);
+void set_green_value(uint32_t value);
 
-void ClearGreenValue();
+void clear_green_value();
 
 /**
  * \param [in] value -- Value to show on red display
@@ -32,14 +32,14 @@ void ClearGreenValue();
  * Set value to display on red display. \b value can not be greater
  * than 999.0 and lesser than 0.01
  */
-void SetRedValue(uint32_t value);
+void set_red_value(uint32_t value);
 
-void ClearRedValue();
+void clear_red_value();
 
 /**
  * One pass for display. Call it repeatedly for dynamic display to work.
  * Whole display update complete with 6 iterations.
  */
-void DisplayIterate();
+void display_iterate();
 
 #endif // DISPLAY_H

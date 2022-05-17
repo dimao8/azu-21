@@ -3,11 +3,11 @@
 
 #include <stdbool.h>
 
-void InitPWM();
+void init_pwm();
 
-void SetPWMValue(unsigned short value);
+void set_pwm_value(unsigned short value);
 
-void EnablePWM(bool ena);
+void enable_pwm(bool ena);
 
 #endif // PWM_H
 

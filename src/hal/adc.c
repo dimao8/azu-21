@@ -30,7 +30,7 @@
 #define VREF_ADDRESL        0x1FFFF7BA
 #define VREF_ADDRESH        0x1FFFF7BB
 
-int GetReferenceCalibrationValue()
+int get_reference_calibration_value()
 {
   int result = (int)(*(uint8_t*)(VREF_ADDRESL));
 
@@ -41,7 +41,7 @@ int GetReferenceCalibrationValue()
 
 /***************  InitADC  ***************/
 
-void InitADC()
+void init_adc()
 {
   RCC->APB2ENR |= RCC_APB2ENR_ADCEN;
   RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
@@ -61,9 +61,9 @@ void InitADC()
 
 }
 
-/************  ConvertChannel  ***********/
+/************  convert_channel  ***********/
 
-int ConvertChannel(unsigned char channel)
+int convert_channel(unsigned char channel)
 {
   if (channel > ADC_MAX_CHANNEL)
     return -1;
@@ -75,9 +75,9 @@ int ConvertChannel(unsigned char channel)
   return ADC1->DR & ADC_DR_DATA_Msk;
 }
 
-/***********  ConvertReference  **********/
+/***********  convet_reference  **********/
 
-int ConvertReference()
+int convet_reference()
 {
   int primary_result;
 
@@ -89,5 +89,5 @@ int ConvertReference()
 
   primary_result = ADC1->DR & ADC_DR_DATA_Msk;
 
-  return 3300*GetReferenceCalibrationValue()/primary_result;
+  return 3300*get_reference_calibration_value()/primary_result;
 }

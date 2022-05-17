@@ -36,9 +36,9 @@ key_callback_proc_t keyboard_callback;
 uint32_t key_timer;
 key_t hold_key;
 
-/***********************  InitKeyboard  ***********************/
+/***********************  init_keyboard  ***********************/
 
-void InitKeyboard(key_callback_proc_t callback)
+void init_keyboard(key_callback_proc_t callback)
 {
   RCC->AHBENR |= RCC_AHBENR_GPIOFEN;                        // Enable GPIOF in RCC
 
@@ -48,13 +48,13 @@ void InitKeyboard(key_callback_proc_t callback)
     | (GPIO_MODE_INPUT << KEYBOARD_KEY_MODE_Pos*2);
 
   keyboard_callback = callback;
-  hold_key = kNone;
+  hold_key = k_none;
   key_timer = 0;
 }
 
-/************************  GetKeyState  ***********************/
+/************************  get_key_state  ***********************/
 
-key_t GetKeyState()
+key_t get_key_state()
 {
   uint32_t keys = ~(GPIOF->IDR) & KEYBOARD_Msk;
 
@@ -62,29 +62,29 @@ key_t GetKeyState()
     {
 
     case KEYBOARD_KEY_START_Msk:
-      return kStart;
+      return k_start;
 
     case KEYBOARD_KEY_UP_Msk:
-      return kUp;
+      return k_up;
 
     case KEYBOARD_KEY_DOWN_Msk:
-      return kDown;
+      return k_down;
 
     case KEYBOARD_KEY_MODE_Msk:
-      return kMode;
+      return k_mode;
 
     default:
-      return kNone;
+      return k_none;
 
     }
 }
 
-/**********************  ProcessKeyboard  *********************/
+/**********************  process_keyboard  *********************/
 
-void ProcessKeyboard()
+void process_keyboard()
 {
-  key_t key = GetKeyState();
-  if (key != kNone)
+  key_t key = get_key_state();
+  if (key != k_none)
     {
       if (key != hold_key)
         {
@@ -104,6 +104,6 @@ void ProcessKeyboard()
   else
     {
       key_timer = 0;
-      hold_key = kNone;
+      hold_key = k_none;
     }
 }

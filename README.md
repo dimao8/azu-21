@@ -11,7 +11,7 @@ charging current (default 0.5A). The stage duration is about 1min.
 __Current charge__ stage: charger continue to pass maximum current through the battery. Good battery will increase
 its voltage to maximum (typically 4.2V for one Li-ion battery).
 
-__Voltage charge__stage: charger try to hold constant voltage on battery. During this process the current will be decrease
+__Voltage charge__ stage: charger try to hold constant voltage on battery. During this process the current will be decrease
 until riches its minimum (about 50mA). Then charger stop charging process.
 
 In idle state charger do not charge battery. 7-segment leds show maximum charging current and fully charged battery

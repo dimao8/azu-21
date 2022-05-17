@@ -49,7 +49,7 @@ int n;
 
 /**************************  InitCharger  **************************/
 
-void InitCharger()
+void init_charger()
 {
   charger_current = DEFAULT_CHARGER_CURRENT;
   charger_voltage = DEFAULT_CHARGER_VOLTAGE;
@@ -61,91 +61,91 @@ void InitCharger()
 
   charger_timer = 0;
 
-  InitSysTick();
-  InitDisplay();
-  InitKeyboard(OnKeyPress);
-  InitADC();
-  InitPWM();
+  init_systick();
+  init_display();
+  init_keyboard(on_key_press);
+  init_adc();
+  init_pwm();
 
   n = 1;
 }
 
 /*****************************  OnIdle  ****************************/
 
-void OnIdle()
+void on_idle()
 {
   int adc_reference;
 
-  DisplayIterate();
+  display_iterate();
   msleep(DEFAULT_CHARGER_CYCLE_MS);
   charger_timer += DEFAULT_CHARGER_CYCLE_MS;
-  ProcessKeyboard();
+  process_keyboard();
 
   switch (charger_state)
     {
 
     case stTest:
-      SetPWMValue(0);
+      set_pwm_value(0);
       if (charger_timer > TEST_TIMEOUT_MS)
         {
           charger_state = stIdle;
-          SetTestState(false);
-          SetGreenValue(charger_voltage);
-          SetRedValue(charger_current);
+          set_test_state(false);
+          set_green_value(charger_voltage);
+          set_red_value(charger_current);
           charger_timer = 0;
         }
       break;
 
     case stIdle:
-      SetPWMValue(0);
+      set_pwm_value(0);
       if (charger_timer > VALUES_UPDATE_TIMEOUT_MS)
         {
-          SetGreenValue(charger_voltage);
-          SetRedValue(charger_current);
+          set_green_value(charger_voltage);
+          set_red_value(charger_current);
           charger_timer = 0;
         }
       break;
 
     case stCharge:
       // UpdateCharge();
-      adc_reference = ConvertReference();
+      adc_reference = convet_reference();
 
-      measured_current = ConvertChannel(ADC_CHANNEL_ISEN);
+      measured_current = convert_channel(ADC_CHANNEL_ISEN);
       measured_current = measured_current*adc_reference/4096;
 
-      measured_voltage = ConvertChannel(ADC_CHANNEL_VSENP);
-      measured_voltage -= ConvertChannel(ADC_CHANNEL_VSENN);
+      measured_voltage = convert_channel(ADC_CHANNEL_VSENP);
+      measured_voltage -= convert_channel(ADC_CHANNEL_VSENN);
       measured_voltage = measured_voltage*adc_reference/4096;
 
       // TODO : Delete this -->
-      SetPWMValue(n*10);
+      set_pwm_value(n*10);
       // <--
-      // SetGreenValue(measured_voltage);
-      SetRedValue(measured_current);
+      // set_green_value(measured_voltage);
+      set_red_value(measured_current);
       break;
 
     case stVoltage:
-      SetPWMValue(0);
+      set_pwm_value(0);
       if (charger_timer > VALUES_BLINK_TIMEOUT_MS)
         {
           charger_timer = 0;
         }
       if (charger_timer > VALUES_BLINK_TIMEOUT_MS/2)
-        ClearGreenValue();
+        clear_green_value();
       else
-        SetGreenValue(charger_voltage);
+        set_green_value(charger_voltage);
       break;
 
     case stCurrent:
-      SetPWMValue(0);
+      set_pwm_value(0);
       if (charger_timer > VALUES_BLINK_TIMEOUT_MS)
         {
           charger_timer = 0;
         }
       if (charger_timer > VALUES_BLINK_TIMEOUT_MS/2)
-        ClearRedValue();
+        clear_red_value();
       else
-        SetRedValue(charger_current);
+        set_red_value(charger_current);
       break;
 
     default:
@@ -156,7 +156,7 @@ void OnIdle()
 
 /***************************  OnKeyPress  **************************/
 
-void OnKeyPress(key_t key)
+void on_key_press(key_t key)
 {
   switch (charger_state)
     {
@@ -165,14 +165,14 @@ void OnKeyPress(key_t key)
       switch (key)
         {
 
-        case kMode:
+        case k_mode:
           charger_state = stVoltage;
           break;
 
-        case kStart:
+        case k_start:
           // TODO : StartCharge();
           charger_state = stCharge;
-          SetPWMValue(0);
+          set_pwm_value(0);
           break;
 
         default:
@@ -185,17 +185,17 @@ void OnKeyPress(key_t key)
       switch (key)
         {
 
-        case kMode:
+        case k_mode:
           charger_state = stCurrent;
           break;
 
-        case kUp:
+        case k_up:
           charger_voltage += 100;
           if (charger_voltage > VOLTAGE_LIMIT)
             charger_voltage = VOLTAGE_LIMIT;
           break;
 
-        case kDown:
+        case k_down:
           charger_voltage -= 100;
           if (charger_voltage > VOLTAGE_LIMIT)
             charger_voltage = 0;
@@ -211,17 +211,17 @@ void OnKeyPress(key_t key)
       switch (key)
         {
 
-        case kMode:
+        case k_mode:
           charger_state = stIdle;
           break;
 
-        case kUp:
+        case k_up:
           charger_current += 10;
           if (charger_current > CURRENT_LIMIT)
             charger_current = CURRENT_LIMIT;
           break;
 
-        case kDown:
+        case k_down:
           charger_current -= 10;
           if (charger_current > CURRENT_LIMIT)
             charger_current = 0;
@@ -237,18 +237,18 @@ void OnKeyPress(key_t key)
       switch (key)
         {
 
-          case kUp:
+          case k_up:
             n++;
             if (n > 100)
               n = 100;
-            SetGreenValue(n*10);
+            set_green_value(n*10);
             break;
 
-          case kDown:
+          case k_down:
             n--;
             if (n < 0)
               n = 0;
-            SetGreenValue(n*10);
+            set_green_value(n*10);
             break;
 
         }

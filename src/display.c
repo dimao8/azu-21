@@ -99,9 +99,9 @@ const unsigned char symbol_table[10] =
   0x6F                                                      // 9
 };
 
-//******************  SelectCathode  ******************
+//******************  select_cathode  ******************
 
-void SelectCathode(int n)
+void select_cathode(int n)
 {
   unsigned long u32;
 
@@ -116,9 +116,9 @@ void SelectCathode(int n)
     GPIOB->ODR &= ~DISPLAY_CATODES_Msk;
 }
 
-//********************  SetDigit  *********************
+//********************  set_digit  *********************
 
-void SetDigit(unsigned char n)
+void set_digit(unsigned char n)
 {
   GPIOB->ODR &= ~DISPLAY_DIGIT_Msk;
   if (n < 3)
@@ -127,9 +127,9 @@ void SetDigit(unsigned char n)
     GPIOB->ODR |= red_buffer[n - 3];
 }
 
-//********************  PrintFloat  *******************
+//********************  print_float  *******************
 
-void PrintFloat(unsigned char * buffer, uint32_t value)
+void print_float(unsigned char * buffer, uint32_t value)
 {
   uint32_t num;
 
@@ -170,9 +170,9 @@ void PrintFloat(unsigned char * buffer, uint32_t value)
   buffer[2] |= symbol_table[value%10];
 }
 
-//*******************  InitDisplay  *******************
+//*******************  init_display  *******************
 
-void InitDisplay()
+void init_display()
 {
   RCC->AHBENR |= RCC_AHBENR_GPIOBEN;                        // Enable GPIOB in RCC
 
@@ -231,12 +231,12 @@ void InitDisplay()
 
   current_digit = 0;
 
-  SetTestState(true);
+  set_test_state(true);
 }
 
-//*******************  SetTestState  ******************
+//*******************  set_test_state  ******************
 
-void SetTestState(bool state)
+void set_test_state(bool state)
 {
   if (state)
     {
@@ -266,41 +266,41 @@ void SetTestState(bool state)
     }
 }
 
-//******************  SetGreenValue  ******************
+//******************  set_green_value  ******************
 
-void SetGreenValue(uint32_t value)
+void set_green_value(uint32_t value)
 {
-  PrintFloat(green_buffer, value);
+  print_float(green_buffer, value);
 }
 
-void ClearGreenValue()
+void clear_green_value()
 {
   green_buffer[0] = 0;
   green_buffer[1] = 0;
   green_buffer[2] = 0;
 }
 
-//*******************  SetRedValue  *******************
+//*******************  set_red_value  *******************
 
-void SetRedValue(uint32_t value)
+void set_red_value(uint32_t value)
 {
-  PrintFloat(red_buffer, value);
+  print_float(red_buffer, value);
 }
 
-void ClearRedValue()
+void clear_red_value()
 {
   red_buffer[0] = 0;
   red_buffer[1] = 0;
   red_buffer[2] = 0;
 }
 
-//******************  DisplayIterate  *****************
+//******************  display_iterate  *****************
 
-void DisplayIterate()
+void display_iterate()
 {
-  SelectCathode(-1);
-  SetDigit(current_digit);
-  SelectCathode(current_digit);
+  select_cathode(-1);
+  set_digit(current_digit);
+  select_cathode(current_digit);
 
   current_digit++;
   if (current_digit >= 6)

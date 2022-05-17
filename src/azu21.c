@@ -2,11 +2,11 @@
 
 int main()
 {
-	InitCharger();
+	init_charger();
 
 	while (1)
 	  {
-			OnIdle();
+			on_idle();
 	  }
 	return 0;
 }

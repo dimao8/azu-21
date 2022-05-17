@@ -4,9 +4,9 @@
 
 uint32_t elapsed;
 
-/***********************  InitSysTick  ***********************/
+/***********************  init_systick  ***********************/
 
-void InitSysTick()
+void init_systick()
 {
   uint32_t reload = FREQUENCY/1000;
 
@@ -39,9 +39,9 @@ void sleep(uint32_t s)
   while (elapsed - start < s*1000) { asm("nop"); }
 }
 
-/*************************  GetTicks  ************************/
+/*************************  get_ticks  ************************/
 
-uint32_t GetTicks()
+uint32_t get_ticks()
 {
   return elapsed;
 }
