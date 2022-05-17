@@ -75,9 +75,9 @@ int convert_channel(unsigned char channel)
   return ADC1->DR & ADC_DR_DATA_Msk;
 }
 
-/***********  convet_reference  **********/
+/***********  convert_reference  **********/
 
-int convet_reference()
+int convert_reference()
 {
   int primary_result;
 

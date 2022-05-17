@@ -47,7 +47,7 @@ int convert_channel(unsigned char channel);
  *
  * \return Return result of ADC conversion in millivolts. Negative value means error.
  */
-int convet_reference();
+int convert_reference();
 
 #endif // ADC_H
 

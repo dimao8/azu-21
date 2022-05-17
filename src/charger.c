@@ -8,56 +8,90 @@
 
 #include <stdint.h>
 
-#define CURRENT_LIMIT             500
-#define VOLTAGE_LIMIT             21000
-#define CURRENT_TRESHOLD_LIMIT    100
+#define CURRENT_LIMIT               500
+#define VOLTAGE_LIMIT               21000
+#define CURRENT_TRESHOLD_LIMIT      100
 
-#define DEFAULT_CHARGER_VOLTAGE   21000
-#define DEFAULT_CHARGER_CURRENT   500
+#define DEFAULT_CHARGER_VOLTAGE     21000
+#define DEFAULT_CHARGER_CURRENT     500
 
-#define DEFAULT_CHARGER_CYCLE_MS  2
+#define DEFAULT_CHARGER_CYCLE_MS    2
 
-#define TEST_TIMEOUT_MS           2000
-#define VALUES_UPDATE_TIMEOUT_MS  500
-#define VALUES_BLINK_TIMEOUT_MS   1000
+#define TEST_TIMEOUT_MS             2000
+#define VALUES_UPDATE_TIMEOUT_MS    500
+#define VALUES_BLINK_TIMEOUT_MS     1000
+#define PRECHARGE_TIMEOUT_MS        10000
+#define FILTER_FREQUENCY_REDUCTION  100
+
+#define IIR_A0                      1.0f
+#define IIR_A1                      -0.9390625f
+#define IIR_B0                      0.0304687f
+#define IIR_B1                      0.0304687f
+
+#define CURRENT_P_K                 0.1E-6f
+#define CURRENT_I_K                 0.1E-6f
+
+#define VOLTAGE_P_K                 0.1E-6f
+#define VOLTAGE_I_K                 0.1E-6f
 
 /**
  * State machine enumerator for charger states.
  */
 typedef enum charger_state_tag
 {
-  stTest,                                         //!< Test is shown
-  stIdle,                                         //!< Normal state of the charger. No charge
-  stCharge,                                       //!< Charge in progress
-  stVoltage,                                      //!< Voltage set state
-  stCurrent                                       //!< Current set state
+  st_test,                                        //!< Test is shown
+  st_idle,                                        //!< Normal state of the charger. No charge
+  st_charge,                                      //!< Charge in progress
+  st_voltage,                                     //!< Voltage set state
+  st_current                                      //!< Current set state
 } charger_state_t;
 
 charger_state_t charger_state;                    //!< State of the charger
 
+/**
+ * Charger process stage
+ */
+typedef enum charge_process_stage_tag
+{
+  cs_off,                                         //!< Charge is now stopped
+  cs_testing,                                     //!< Test accumulator
+  cs_precharge,                                   //!< Precharge stage
+  cs_current,                                     //!< Charge with constant current
+  cs_voltage                                      //!< Charge with constant voltage
+} charge_process_stage_t;
+
+charge_process_stage_t charge_process_stage;
+
 uint32_t charger_current;                         //!< The maximum current on second stage (mA)
 uint32_t charger_voltage;                         //!< The maximum voltage at the end of charging (mV)
 
-uint32_t measured_current;                        //!< Current in charge process
-uint32_t measured_voltage;                        //!< Voltage in charge process
+uint32_t measured_current[2];                     //!< Current in charge process
+uint32_t measured_voltage[2];                     //!< Voltage in charge process
+
+uint32_t filtered_current;                        //!< Filtered current in charging process
+uint32_t filtered_voltage;                        //!< Filtered voltage in charging process
 
 uint32_t charger_timer;                           //!< Global timer for charger
 
-// TODO : Delete this -->
-int n;
-// <--
+/**
+ * Update charger during charging process. Call every 2ms
+ */
+void update_charger();
 
-/**************************  InitCharger  **************************/
+/**************************  init_charger  **************************/
 
 void init_charger()
 {
   charger_current = DEFAULT_CHARGER_CURRENT;
   charger_voltage = DEFAULT_CHARGER_VOLTAGE;
 
-  measured_current = 0;
-  measured_voltage = 0;
+  measured_current[0] = 0;
+  measured_current[1] = 0;
+  measured_voltage[0] = 0;
+  measured_voltage[1] = 0;
 
-  charger_state = stTest;
+  charger_state = st_test;
+  charge_process_stage = cs_off;
 
   charger_timer = 0;
 
@@ -66,11 +100,9 @@ void init_charger()
   init_keyboard(on_key_press);
   init_adc();
   init_pwm();
-
-  n = 1;
 }
 
-/*****************************  OnIdle  ****************************/
+/*****************************  on_idle  ****************************/
 
 void on_idle()
 {
@@ -84,11 +116,11 @@ void on_idle()
   switch (charger_state)
     {
 
-    case stTest:
+    case st_test:
       set_pwm_value(0);
       if (charger_timer > TEST_TIMEOUT_MS)
         {
-          charger_state = stIdle;
+          charger_state = st_idle;
           set_test_state(false);
           set_green_value(charger_voltage);
           set_red_value(charger_current);
@@ -96,7 +128,7 @@ void on_idle()
         }
       break;
 
-    case stIdle:
+    case st_idle:
       set_pwm_value(0);
       if (charger_timer > VALUES_UPDATE_TIMEOUT_MS)
         {
@@ -106,25 +138,27 @@ void on_idle()
         }
       break;
 
-    case stCharge:
-      // UpdateCharge();
-      adc_reference = convet_reference();
+    case st_charge:
+      adc_reference = convert_reference();
 
-      measured_current = convert_channel(ADC_CHANNEL_ISEN);
-      measured_current = measured_current*adc_reference/4096;
+      measured_current[0] = measured_current[1];
+      measured_current[1] = convert_channel(ADC_CHANNEL_ISEN);
+      measured_current[1] = measured_current[1]*adc_reference/4096;
+      filtered_current = (1.0f/IIR_A0)*(IIR_B1*measured_current[1] + IIR_B0*measured_current[0] - filtered_current*IIR_A1);
 
-      measured_voltage = convert_channel(ADC_CHANNEL_VSENP);
-      measured_voltage -= convert_channel(ADC_CHANNEL_VSENN);
-      measured_voltage = measured_voltage*adc_reference/4096;
+      measured_voltage[0] = measured_voltage[1];
+      measured_voltage[1] = convert_channel(ADC_CHANNEL_VSENP);
+      measured_voltage[1] -= convert_channel(ADC_CHANNEL_VSENN);
+      measured_voltage[1] = measured_voltage[1]*adc_reference/4096;
+      filtered_voltage = (1.0f/IIR_A0)*(IIR_B1*measured_voltage[1] + IIR_B0*measured_voltage[0] - filtered_voltage*IIR_A1);
 
-      // TODO : Delete this -->
-      set_pwm_value(n*10);
-      // <--
-      // set_green_value(measured_voltage);
-      set_red_value(measured_current);
+      // update_charger();
+      
+      set_green_value(filtered_voltage);
+      set_red_value(filtered_current);
       break;
 
-    case stVoltage:
+    case st_voltage:
       set_pwm_value(0);
       if (charger_timer > VALUES_BLINK_TIMEOUT_MS)
         {
@@ -136,7 +170,7 @@ void on_idle()
         set_green_value(charger_voltage);
       break;
 
-    case stCurrent:
+    case st_current:
       set_pwm_value(0);
       if (charger_timer > VALUES_BLINK_TIMEOUT_MS)
         {
@@ -154,24 +188,25 @@ void on_idle()
     }
 }
 
-/***************************  OnKeyPress  **************************/
+/***************************  on_key_press  **************************/
 
 void on_key_press(key_t key)
 {
   switch (charger_state)
     {
 
-    case stIdle:
+    case st_idle:
       switch (key)
         {
 
         case k_mode:
-          charger_state = stVoltage;
+          charger_state = st_voltage;
           break;
 
         case k_start:
-          // TODO : StartCharge();
-          charger_state = stCharge;
+          charger_state = st_charge;
+          charge_process_stage = cs_testing;
+          charger_timer = 0;
           set_pwm_value(0);
           break;
 
@@ -181,12 +216,12 @@ void on_key_press(key_t key)
         }
       break;
 
-    case stVoltage:
+    case st_voltage:
       switch (key)
         {
 
         case k_mode:
-          charger_state = stCurrent;
+          charger_state = st_current;
           break;
 
         case k_up:
@@ -207,12 +242,12 @@ void on_key_press(key_t key)
         }
       break;
 
-    case stCurrent:
+    case st_current:
       switch (key)
         {
 
         case k_mode:
-          charger_state = stIdle;
+          charger_state = st_idle;
           break;
 
         case k_up:
@@ -233,28 +268,28 @@ void on_key_press(key_t key)
         }
       break;
 
-    case stCharge:
-      switch (key)
-        {
-
-          case k_up:
-            n++;
-            if (n > 100)
-              n = 100;
-            set_green_value(n*10);
-            break;
-
-          case k_down:
-            n--;
-            if (n < 0)
-              n = 0;
-            set_green_value(n*10);
-            break;
-
-        }
+    case st_charge:
+      //
       break;
 
     default:
+      break;
+
+    }
+}
+
+/**************************  update_charger  *************************/
+
+void update_charger()
+{
+  switch (charge_process_stage)
+    {
+
+    case cs_off:
+      charger_state = st_idle;
+      break;
+
+    case cs_testing:
       break;
 
     }

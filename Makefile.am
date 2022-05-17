@@ -25,6 +25,6 @@ azu21_CFLAGS = -mcpu=cortex-m0 -mthumb -I$(srcdir)/include -I$(srcdir)/src/hal -
 azu21_LDFLAGS = -L$(srcdir)/ld -Tstm32f030x.ld -nostartfiles -lnosys
 
 program :
-	openocd -f "interfaces/stlink-v2.cfg" -f "target/stm32f0x.cfg" -c "program azu21 verify exit"
+	openocd -f "interface/stlink-v2.cfg" -f "target/stm32f0x.cfg" -c "program azu21 verify exit"
 
 .PHONY : program
